@@ -142,9 +142,7 @@ def search(keyword: str, headless: bool):
 def serve(headless: bool):
     """启动 MCP 服务（stdio 模式）"""
     from xhs_mcp.mcp_server import run_server
-    
-    click.echo("启动 MCP 服务...")
-    asyncio.run(run_server(headless=headless))
+    run_server(headless=headless)
 
 
 if __name__ == "__main__":

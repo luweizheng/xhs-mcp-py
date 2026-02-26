@@ -1,31 +1,29 @@
 """MCP 服务端"""
 
-import base64
 from typing import Optional
-from mcp.server import Server
-from mcp.types import Tool, TextContent, ImageContent
+from mcp.server.fastmcp import FastMCP
 from loguru import logger
 
 from xhs_mcp.client import XhsClient
-from xhs_mcp.models import PublishImageContent, PublishVideoContent
 
 
 # 创建 MCP Server
-server = Server("xiaohongshu-mcp")
+mcp = FastMCP(name="xiaohongshu-mcp")
 
 # 全局客户端实例
 _client: Optional[XhsClient] = None
+_headless: bool = True
 
 
-def get_client(headless: bool = True) -> XhsClient:
+def get_client() -> XhsClient:
     """获取客户端实例"""
     global _client
     if _client is None:
-        _client = XhsClient(headless=headless)
+        _client = XhsClient(headless=_headless)
     return _client
 
 
-@server.tool()
+@mcp.tool()
 async def check_login_status() -> dict:
     """检查小红书登录状态"""
     client = get_client()
@@ -36,7 +34,7 @@ async def check_login_status() -> dict:
     }
 
 
-@server.tool()
+@mcp.tool()
 async def get_login_qrcode() -> dict:
     """获取登录二维码（返回 Base64 图片和超时时间）"""
     client = get_client()
@@ -48,7 +46,7 @@ async def get_login_qrcode() -> dict:
     }
 
 
-@server.tool()
+@mcp.tool()
 async def delete_cookies() -> dict:
     """删除 cookies 文件，重置登录状态。删除后需要重新登录。"""
     client = get_client()
@@ -56,7 +54,7 @@ async def delete_cookies() -> dict:
     return {"success": True, "message": "Cookies 已删除"}
 
 
-@server.tool()
+@mcp.tool()
 async def publish_content(
     title: str,
     content: str,
@@ -97,7 +95,7 @@ async def publish_content(
     }
 
 
-@server.tool()
+@mcp.tool()
 async def publish_with_video(
     title: str,
     content: str,
@@ -138,7 +136,7 @@ async def publish_with_video(
     }
 
 
-@server.tool()
+@mcp.tool()
 async def search_feeds(keyword: str, sort_by: Optional[str] = None, note_type: Optional[str] = None) -> dict:
     """搜索小红书内容
     
@@ -161,7 +159,7 @@ async def search_feeds(keyword: str, sort_by: Optional[str] = None, note_type: O
     }
 
 
-@server.tool()
+@mcp.tool()
 async def list_feeds() -> dict:
     """获取首页推荐列表"""
     client = get_client()
@@ -172,7 +170,7 @@ async def list_feeds() -> dict:
     }
 
 
-@server.tool()
+@mcp.tool()
 async def get_feed_detail(feed_id: str, xsec_token: str, load_comments: bool = False) -> dict:
     """获取笔记详情
     
@@ -185,7 +183,7 @@ async def get_feed_detail(feed_id: str, xsec_token: str, load_comments: bool = F
     return await client.get_feed_detail(feed_id, xsec_token, load_comments)
 
 
-@server.tool()
+@mcp.tool()
 async def get_user_profile(user_id: str, xsec_token: str) -> dict:
     """获取用户主页信息
     
@@ -197,7 +195,7 @@ async def get_user_profile(user_id: str, xsec_token: str) -> dict:
     return await client.get_user_profile(user_id, xsec_token)
 
 
-@server.tool()
+@mcp.tool()
 async def like_feed(feed_id: str, xsec_token: str, unlike: bool = False) -> dict:
     """点赞或取消点赞笔记
     
@@ -212,7 +210,7 @@ async def like_feed(feed_id: str, xsec_token: str, unlike: bool = False) -> dict
     return await client.like(feed_id, xsec_token)
 
 
-@server.tool()
+@mcp.tool()
 async def favorite_feed(feed_id: str, xsec_token: str, unfavorite: bool = False) -> dict:
     """收藏或取消收藏笔记
     
@@ -227,7 +225,7 @@ async def favorite_feed(feed_id: str, xsec_token: str, unfavorite: bool = False)
     return await client.favorite(feed_id, xsec_token)
 
 
-@server.tool()
+@mcp.tool()
 async def post_comment(feed_id: str, xsec_token: str, content: str) -> dict:
     """发表评论到笔记
     
@@ -240,27 +238,14 @@ async def post_comment(feed_id: str, xsec_token: str, content: str) -> dict:
     return await client.comment(feed_id, xsec_token, content)
 
 
-def create_server(headless: bool = True) -> Server:
-    """创建 MCP 服务器实例
-    
-    Args:
-        headless: 是否无头模式运行浏览器
-    """
-    global _client
-    _client = XhsClient(headless=headless)
+def init_server(headless: bool = True):
+    """初始化服务器"""
+    global _headless
+    _headless = headless
     logger.info("MCP Server 已初始化")
-    return server
 
 
-async def run_server(headless: bool = True):
+def run_server(headless: bool = True):
     """运行 MCP 服务器（stdio 模式）"""
-    from mcp.server.stdio import stdio_server
-    
-    srv = create_server(headless=headless)
-    
-    async with stdio_server() as (read_stream, write_stream):
-        await srv.run(
-            read_stream,
-            write_stream,
-            srv.create_initialization_options()
-        )
+    init_server(headless=headless)
+    mcp.run(transport="stdio")

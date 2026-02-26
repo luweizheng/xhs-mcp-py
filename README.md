@@ -107,9 +107,11 @@ asyncio.run(main())
 | `favorite_feed` | 收藏/取消收藏 |
 | `post_comment` | 发表评论 |
 
-### MCP 配置示例
+## MCP 客户端配置
 
-在 Claude Desktop 或其他 MCP 客户端中配置：
+### Claude Desktop
+
+编辑配置文件 `~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）或 `%APPDATA%\Claude\claude_desktop_config.json`（Windows）：
 
 ```json
 {
@@ -120,6 +122,54 @@ asyncio.run(main())
     }
   }
 }
+```
+
+如果 `xhs-mcp` 不在系统 PATH 中，使用完整路径：
+
+```json
+{
+  "mcpServers": {
+    "xiaohongshu": {
+      "command": "/path/to/your/python/bin/xhs-mcp",
+      "args": ["serve"]
+    }
+  }
+}
+```
+
+可通过 `which xhs-mcp`（macOS/Linux）或 `where xhs-mcp`（Windows）查看完整路径。
+
+配置完成后重启 Claude Desktop。
+
+### Claude Code (claude.ai/code)
+
+```bash
+# 添加 MCP 服务
+claude mcp add xiaohongshu -- xhs-mcp serve
+
+# 查看已添加的 MCP
+claude mcp list
+
+# 移除 MCP 服务
+claude mcp remove xiaohongshu
+```
+
+### Cursor
+
+在 Cursor 设置中添加 MCP 配置：
+
+1. 打开 Cursor Settings → Features → MCP Servers
+2. 点击 "Add Server"
+3. 填写：
+   - Name: `xiaohongshu`
+   - Command: `xhs-mcp serve`
+
+### 其他 MCP 客户端
+
+任何支持 MCP 协议的客户端都可以使用，启动命令为：
+
+```bash
+xhs-mcp serve
 ```
 
 ## API 参考
