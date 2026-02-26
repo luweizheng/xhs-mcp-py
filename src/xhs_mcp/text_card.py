@@ -165,29 +165,45 @@ class TextCardAction:
                         logger.info(f"正文已填写，使用选择器: {sel}")
                         break
             
-            # 10. 添加标签
+            # 10. 添加标签 - 点击推荐标签
             if tags:
                 logger.info(f"添加标签: {tags}")
                 for tag in tags:
-                    # 点击话题按钮
-                    topic_btn = await page.query_selector("text=# 话题")
-                    if topic_btn:
-                        await topic_btn.click()
+                    # 使用 JavaScript 查找并点击包含标签文字的元素
+                    tag_text = tag if tag.startswith('#') else f"#{tag}"
+                    clicked = await page.evaluate(f'''() => {{
+                        const elements = document.querySelectorAll('*');
+                        for (const el of elements) {{
+                            if (el.textContent && el.textContent.trim() === '{tag_text}' && el.children.length === 0) {{
+                                el.click();
+                                return true;
+                            }}
+                        }}
+                        // 如果没找到精确匹配，尝试包含匹配
+                        for (const el of elements) {{
+                            if (el.textContent && el.textContent.includes('{tag}') && el.textContent.startsWith('#') && el.children.length === 0) {{
+                                el.click();
+                                return true;
+                            }}
+                        }}
+                        return false;
+                    }}''')
+                    
+                    if clicked:
+                        logger.info(f"已添加标签: {tag}")
                         await asyncio.sleep(0.5)
-                        
-                        # 在搜索框输入标签
-                        tag_input = await page.query_selector("input[placeholder*='搜索'], input[placeholder*='话题']")
-                        if tag_input:
-                            await tag_input.fill(tag)
-                            await asyncio.sleep(1)
+                    else:
+                        # 尝试点击"# 话题"按钮搜索
+                        topic_btn = await page.query_selector("text=# 话题")
+                        if topic_btn:
+                            await topic_btn.click()
+                            await asyncio.sleep(0.5)
                             
-                            # 选择第一个搜索结果
-                            first_result = await page.query_selector("[class*='topic-item'], [class*='search-item'], [class*='result-item']")
-                            if first_result:
-                                await first_result.click()
-                                await asyncio.sleep(0.5)
-                            else:
-                                # 按回车确认
+                            # 在搜索框输入标签
+                            tag_input = await page.query_selector("input")
+                            if tag_input:
+                                await tag_input.fill(tag)
+                                await asyncio.sleep(1)
                                 await tag_input.press("Enter")
                                 await asyncio.sleep(0.5)
             
