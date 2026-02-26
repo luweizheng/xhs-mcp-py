@@ -37,8 +37,34 @@ async def check_login_status() -> dict:
 
 
 @mcp.tool()
+async def login_with_browser() -> dict:
+    """小红书扫码登录（会启动浏览器窗口）。
+    
+    首次使用或登录过期时必须调用此工具。
+    会启动浏览器窗口显示二维码，用户需要用小红书 App 扫码登录。
+    登录成功后 cookies 会自动保存到本地文件，后续调用其他工具时会自动加载 cookies，无需再次登录。
+    
+    Cookies 有效期通常为 7-30 天，过期后需要重新登录。
+    
+    Returns:
+        dict: 包含 is_logged_in（是否已登录）、img（二维码图片 Base64）、timeout（超时秒数）
+    """
+    client = get_client()
+    result = await client.get_login_qrcode()
+    return {
+        "is_logged_in": result.is_logged_in,
+        "img": result.img,
+        "timeout": result.timeout,
+        "message": "请使用小红书 App 扫描二维码登录" if not result.is_logged_in else "已登录，cookies 已保存"
+    }
+
+
+@mcp.tool()
 async def get_login_qrcode() -> dict:
-    """获取登录二维码（返回 Base64 图片和超时时间）"""
+    """获取登录二维码（返回 Base64 图片和超时时间）。
+    
+    注意：推荐使用 login_with_browser 工具，功能相同但有更详细的说明。
+    """
     client = get_client()
     result = await client.get_login_qrcode()
     return {

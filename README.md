@@ -23,54 +23,17 @@ pip install xhs-mcp-py
 playwright install chromium
 ```
 
+
 ## 快速开始
 
-### 命令行使用
+### 使用流程
 
-```bash
-# 扫码登录（会打开浏览器窗口）
-xhs-mcp login --no-headless
+1. **首次使用必须先登录**：运行 `xhs-mcp login --no-headless` 扫码登录
+2. **检查登录状态**：运行 `xhs-mcp status` 确认已登录
+3. **执行操作**：登录成功后即可使用各种功能
+4. **Cookies 有效期**：约 7-30 天，过期后需重新登录
 
-# 检查登录状态
-xhs-mcp status
-
-# 发布图文
-xhs-mcp publish -t "标题" -c "正文内容" -i image1.jpg -i image2.jpg --tag 旅行 --tag 美食
-
-# 发布视频
-xhs-mcp publish-video -t "标题" -c "正文内容" -v video.mp4
-
-# 发布文字配图（将文字生成为卡片图片）
-xhs-mcp publish-text-card -c "封面文字" -p "第一页内容" -p "第二页内容" -s "基础" -t "笔记标题"
-
-# 搜索内容
-xhs-mcp search -k "关键词"
-
-# 退出登录
-xhs-mcp logout
-
-# 启动 MCP 服务
-xhs-mcp serve
-```
-
-## MCP 工具列表
-
-| 工具名 | 说明 |
-|--------|------|
-| `check_login_status` | 检查登录状态 |
-| `get_login_qrcode` | 获取登录二维码 |
-| `delete_cookies` | 删除 cookies，重置登录 |
-| `publish_content` | 发布图文内容 |
-| `publish_with_video` | 发布视频内容 |
-| `list_feeds` | 获取首页推荐列表 |
-| `search_feeds` | 搜索内容 |
-| `get_feed_detail` | 获取笔记详情 |
-| `get_user_profile` | 获取用户主页 |
-| `like_feed` | 点赞/取消点赞 |
-| `favorite_feed` | 收藏/取消收藏 |
-| `post_comment` | 发表评论 |
-| `reply_comment` | 回复评论 |
-| `publish_text_card` | 发布文字配图笔记 |
+> 💡 **MCP 使用提示**：让 AI 助手先调用 `check_login_status` 检查登录状态，如果未登录则调用 `login_with_browser` 进行扫码登录。
 
 ## MCP 客户端配置
 
@@ -110,13 +73,13 @@ xhs-mcp serve
 
 ```bash
 # 添加 MCP 服务
-
+claude mcp add xhs-mcp -- xhs-mcp serve
 
 # 查看已添加的 MCP
 claude mcp list
 
 # 移除 MCP 服务
-claude mcp remove xiaohongshu
+claude mcp remove xhs-mcp
 ```
 
 ### Cursor
@@ -126,7 +89,7 @@ claude mcp remove xiaohongshu
 1. 打开 Cursor Settings → Features → MCP Servers
 2. 点击 "Add Server"
 3. 填写：
-   - Name: `xiaohongshu`
+   - Name: `xhs-mcp`
    - Command: `xhs-mcp serve`
 
 ### 其他 MCP 客户端
@@ -136,6 +99,54 @@ claude mcp remove xiaohongshu
 ```bash
 xhs-mcp serve
 ```
+
+## 命令行使用
+
+```bash
+# 1. 扫码登录（首次使用必须执行，会打开浏览器窗口）
+xhs-mcp login --no-headless
+
+# 2. 检查登录状态（确认已登录后再执行其他操作）
+xhs-mcp status
+
+# 发布图文
+xhs-mcp publish -t "标题" -c "正文内容" -i image1.jpg -i image2.jpg --tag 旅行 --tag 美食
+
+# 发布视频
+xhs-mcp publish-video -t "标题" -c "正文内容" -v video.mp4
+
+# 发布文字配图（将文字生成为卡片图片）
+xhs-mcp publish-text-card -c "封面文字" -p "第一页内容" -p "第二页内容" -s "基础" -t "笔记标题"
+
+# 搜索内容
+xhs-mcp search -k "关键词"
+
+# 退出登录
+xhs-mcp logout
+
+# 启动 MCP 服务
+xhs-mcp serve
+```
+
+## MCP 工具列表
+
+| 工具名 | 说明 |
+|--------|------|
+| `login_with_browser` | **首次使用必须调用** - 启动浏览器扫码登录，cookies 保存后可复用 |
+| `check_login_status` | 检查登录状态 |
+| `get_login_qrcode` | 获取登录二维码（同 login_with_browser） |
+| `delete_cookies` | 删除 cookies，重置登录 |
+| `publish_content` | 发布图文内容 |
+| `publish_with_video` | 发布视频内容 |
+| `list_feeds` | 获取首页推荐列表 |
+| `search_feeds` | 搜索内容 |
+| `get_feed_detail` | 获取笔记详情 |
+| `get_user_profile` | 获取用户主页 |
+| `like_feed` | 点赞/取消点赞 |
+| `favorite_feed` | 收藏/取消收藏 |
+| `post_comment` | 发表评论 |
+| `reply_comment` | 回复评论 |
+| `publish_text_card` | 发布文字配图笔记 |
 
 ## API 参考
 
