@@ -21,8 +21,21 @@ class LoginAction:
     def __init__(self, browser: BrowserManager):
         self.browser = browser
     
-    async def check_login_status(self) -> LoginStatus:
-        """检查登录状态"""
+    def has_cookies(self) -> bool:
+        """快速检查是否有 cookies 文件（不打开浏览器）"""
+        from xhs_mcp.cookies import get_cookies_file_path
+        return get_cookies_file_path().exists()
+    
+    async def check_login_status(self, quick: bool = False) -> LoginStatus:
+        """检查登录状态
+        
+        Args:
+            quick: 如果为 True，只检查 cookies 文件是否存在，不打开浏览器验证
+        """
+        if quick:
+            # 快速检查：只看 cookies 文件是否存在
+            return LoginStatus(is_logged_in=self.has_cookies())
+        
         page = await self.browser.new_page()
         try:
             await page.goto(self.XHS_URL)
@@ -105,8 +118,11 @@ class LoginAction:
         """交互式登录（非 headless 模式下使用）
         
         打开浏览器，等待用户扫码登录
+        返回 True 表示已登录（包括之前已登录和本次登录成功）
         """
+        logger.info("login_interactive 被调用，准备打开浏览器")
         page = await self.browser.new_page()
+        logger.info("login_interactive: 浏览器页面已创建")
         
         try:
             await page.goto(self.XHS_URL)
@@ -115,7 +131,7 @@ class LoginAction:
             
             # 检查是否已登录
             if await page.locator(self.LOGIN_SUCCESS_SELECTOR).count() > 0:
-                logger.info("已经登录")
+                logger.info("已经登录，无需重复登录")
                 return True
             
             logger.info("请扫描二维码登录...")

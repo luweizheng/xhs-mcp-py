@@ -1,6 +1,7 @@
 """MCP Server 工具测试"""
 
 import pytest
+import os
 from unittest.mock import patch, AsyncMock, MagicMock
 
 
@@ -8,39 +9,30 @@ class TestCheckLoginStatus:
     """测试 check_login_status MCP 工具"""
     
     @pytest.mark.asyncio
-    async def test_check_login_status_logged_in(self):
+    async def test_check_login_status_logged_in(self, tmp_path, monkeypatch):
         """测试已登录状态"""
         from xhs_mcp.mcp_server import check_login_status
-        
-        with patch('xhs_mcp.mcp_server.get_client') as mock_get_client:
-            mock_client = AsyncMock()
-            mock_status = MagicMock()
-            mock_status.is_logged_in = True
-            mock_status.username = "test_user"
-            mock_client.check_login_status.return_value = mock_status
-            mock_get_client.return_value = mock_client
-            
-            result = await check_login_status()
-            
-            assert result["is_logged_in"] is True
-            assert result["username"] == "test_user"
+
+        cookies_file = tmp_path / "cookies.json"
+        cookies_file.write_text("[]")
+        monkeypatch.setenv("COOKIES_PATH", str(cookies_file))
+
+        result = await check_login_status()
+
+        assert result["is_logged_in"] is True
+        assert result["username"] is None
     
     @pytest.mark.asyncio
-    async def test_check_login_status_not_logged_in(self):
+    async def test_check_login_status_not_logged_in(self, tmp_path, monkeypatch):
         """测试未登录状态"""
         from xhs_mcp.mcp_server import check_login_status
-        
-        with patch('xhs_mcp.mcp_server.get_client') as mock_get_client:
-            mock_client = AsyncMock()
-            mock_status = MagicMock()
-            mock_status.is_logged_in = False
-            mock_status.username = None
-            mock_client.check_login_status.return_value = mock_status
-            mock_get_client.return_value = mock_client
-            
-            result = await check_login_status()
-            
-            assert result["is_logged_in"] is False
+
+        cookies_file = tmp_path / "cookies.json"
+        monkeypatch.setenv("COOKIES_PATH", str(cookies_file))
+
+        result = await check_login_status()
+
+        assert result["is_logged_in"] is False
 
 
 class TestLoginWithBrowser:

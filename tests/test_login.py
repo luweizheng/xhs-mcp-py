@@ -25,7 +25,7 @@ class TestLoginStatus:
         os.environ["COOKIES_PATH"] = cookies_file
         
         async with XhsClient(headless=True) as client:
-            status = await client.check_login_status()
+            status = await client.check_login_status(quick=True)
             assert hasattr(status, "is_logged_in")
             # 如果有 cookies，应该是已登录状态
             assert status.is_logged_in is True
@@ -37,7 +37,7 @@ class TestLoginStatus:
             os.environ["COOKIES_PATH"] = cookies_file
         
         async with XhsClient(headless=True) as client:
-            status = await client.check_login_status()
+            status = await client.check_login_status(quick=True)
             # 验证返回结构
             assert hasattr(status, "is_logged_in")
             assert isinstance(status.is_logged_in, bool)

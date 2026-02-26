@@ -28,18 +28,20 @@ playwright install chromium
 
 ### 使用流程
 
-1. **首次使用必须先登录**：运行 `xhs-mcp login-browser` 或 `xhs-mcp login-qrcode` 扫码登录
+1. **首次使用必须先登录**：运行 `xhs-mcp login-browser` 弹出浏览器登录 或 `xhs-mcp login-qrcode --terminal` 在终端中显示二维码登录
 2. **检查登录状态**：运行 `xhs-mcp status` 确认已登录
 3. **执行操作**：登录成功后即可使用各种功能
 4. **Cookies 有效期**：约 7-30 天，过期后需重新登录
 
-> 💡 **MCP 使用提示**：让 AI 助手先调用 `check_login_status` 检查登录状态，如果未登录则调用 `login_with_browser` 进行扫码登录。
+> 💡 **MCP 使用提示**：让 AI 助手先调用 `check_login_status` 检查登录状态，如果未登录则调用 `xhs-mcp login-browser`命令 进行扫码登录。
 
 ## MCP 客户端配置
 
 ### Claude Desktop
 
-编辑配置文件 `~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）或 `%APPDATA%\Claude\claude_desktop_config.json`（Windows）：
+编辑配置文件 
+* `~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）
+* `%APPDATA%\Claude\claude_desktop_config.json`（Windows）：
 
 ```json
 {
@@ -102,23 +104,47 @@ xhs-mcp serve
 
 ## 发布
 
+### 图文
+
+```
+图：~/Downloads/vc.png
+
+文字标题：Vibe Coding 真的心累💔
+
+文字正文内容：强如 Opus，也只是傻乎乎地解决当下的指令...
+
+就拿我的项目来说👇
+App有两个登录渠道：
+✅ 浏览器登录 ← 先调试好了
+✅ 二维码登录 ← 后调试的
+
+结果你猜怎么着？
+浏览器登录的逻辑直接被二维码登录给复用覆盖了！😅
+
+AI不会帮你考虑整体架构
+它只看「现在」要解决的问题
+就像装修师傅：你让他修灯，他可能把你刚装好的开关拆了😂
+
+标签：#VibeCoding #AI #Claude #Agent #Opus
+```
+
 ### 文字配图
 
 ```
-  封面文字：我开源了个小红书自动发布工具：xhs-mcp-py
+封面文字：我开源了个小红书自动发布工具：xhs-mcp-py
 
-  文字标题：我开源了个小红书自动发布工具：xhs-mcp-py
+文字标题：我开源了个小红书自动发布工具：xhs-mcp-py
 
-  文字正文内容：
-  我开源了个小红书自动发布工具：xhs-mcp-py。
+文字正文内容：
+我开源了个小红书自动发布工具：xhs-mcp-py。
 
-  基于 Python，轻松兼容 Windows、Mac、Linux。
-  支持 Claude Code 和 OpenClaw，还能发布文字配图笔记。
-  核心原理：模拟浏览器登录。
+基于 Python，轻松兼容 Windows、Mac、Linux。
+支持 Claude Code 和 OpenClaw，还能发布文字配图笔记。
+核心原理：模拟浏览器登录。
 
-  项目地址：https://github.com/luweizheng/xhs-mcp-py
+项目地址：https://github.com/luweizheng/xhs-mcp-py
 
-  欢迎来玩！
+欢迎来玩！
 ```
 
 ## 命令行使用
@@ -127,8 +153,12 @@ xhs-mcp serve
 # 1. 扫码登录（首次使用必须执行）
 # 方式一：打开浏览器窗口扫码
 xhs-mcp login-browser
+
 # 方式二：在终端显示二维码，在 Claude Code、Open Code 中推荐使用这种
+# 注意：需要安装 zbar 库（macOS: brew install zbar，Ubuntu: apt install libzbar0）
+# 如果未安装 zbar，会自动保存二维码图片并提示路径
 xhs-mcp login-qrcode --terminal
+
 # 方式三：保存二维码图片，在 OpenClaw 中将 qrcode.png 发送给 Channel 中的用户
 xhs-mcp login-qrcode --save qrcode.png
 
@@ -410,7 +440,7 @@ pytest
 ## 注意事项
 
 - 首次使用需要扫码登录，登录后 cookies 会保存到本地
-- 建议使用 `--no-headless` 模式进行登录，以便扫码
+- 浏览器扫码登录需要弹出浏览器窗口，请使用 `xhs-mcp login-browser`
 - cookies 默认保存在当前目录的 `cookies.json` 文件
 - 可通过环境变量 `COOKIES_PATH` 指定 cookies 文件路径
 

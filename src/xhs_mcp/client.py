@@ -48,14 +48,26 @@ class XhsClient:
         self._comment_action = CommentAction(self.browser)
         self._text_card_action = TextCardAction(self.browser)
     
-    async def check_login_status(self) -> LoginStatus:
-        """检查登录状态"""
-        return await self._login_action.check_login_status()
+    async def check_login_status(self, quick: bool = False) -> LoginStatus:
+        """检查登录状态
+        
+        Args:
+            quick: 如果为 True，只检查 cookies 文件是否存在，不打开浏览器验证
+        """
+        return await self._login_action.check_login_status(quick=quick)
     
-    async def is_logged_in(self) -> bool:
-        """是否已登录"""
-        status = await self.check_login_status()
+    async def is_logged_in(self, quick: bool = False) -> bool:
+        """是否已登录
+        
+        Args:
+            quick: 如果为 True，只检查 cookies 文件是否存在，不打开浏览器验证
+        """
+        status = await self.check_login_status(quick=quick)
         return status.is_logged_in
+    
+    def has_cookies(self) -> bool:
+        """快速检查是否有 cookies 文件（同步方法，不打开浏览器）"""
+        return self._login_action.has_cookies()
     
     async def get_login_qrcode(self) -> LoginQrcodeResponse:
         """获取登录二维码

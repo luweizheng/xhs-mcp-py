@@ -107,12 +107,12 @@ def get_client() -> XhsClient:
 
 @mcp.tool()
 async def check_login_status() -> dict:
-    """检查小红书登录状态"""
-    client = get_client()
-    status = await client.check_login_status()
+    """检查小红书登录状态（只检查 cookies 文件是否存在）"""
+    from xhs_mcp.cookies import get_cookies_file_path
+    has_cookies = get_cookies_file_path().exists()
     return {
-        "is_logged_in": status.is_logged_in,
-        "username": status.username
+        "is_logged_in": has_cookies,
+        "username": None
     }
 
 
@@ -120,31 +120,21 @@ async def check_login_status() -> dict:
 async def login_with_browser() -> dict:
     """浏览器扫码登录（会弹出浏览器窗口）。
     
-    首次使用或登录过期时必须调用此工具。
-    会打开浏览器窗口显示二维码，用户需要用小红书 App 扫码登录。
-    登录成功后 cookies 会自动保存到本地文件，后续调用其他工具时会自动加载 cookies，无需再次登录。
-    
-    Cookies 有效期通常为 7-30 天，过期后需要重新登录。
-    
     注意：在 Claude Code 中，推荐使用命令行登录：xhs-mcp login-qrcode --terminal
-    
-    Returns:
-        dict: 包含 is_logged_in（是否已登录）、message（提示信息）
     """
+    # 先检查是否已有 cookies
+    from xhs_mcp.cookies import get_cookies_file_path
+    if get_cookies_file_path().exists():
+        return {
+            "is_logged_in": True,
+            "message": "已登录，无需重复登录"
+        }
+    
     # 使用非 headless 模式的客户端
     from xhs_mcp.client import XhsClient
     
     async with XhsClient(headless=False) as client:
-        # 检查是否已登录
-        if await client.is_logged_in():
-            return {
-                "is_logged_in": True,
-                "message": "已登录，无需重复登录"
-            }
-        
-        # 交互式登录（会弹出浏览器窗口）
         success = await client.login()
-        
         return {
             "is_logged_in": success,
             "message": "登录成功，cookies 已保存" if success else "登录失败或超时，请重试"

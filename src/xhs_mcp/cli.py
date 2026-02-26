@@ -14,18 +14,15 @@ def main():
 
 
 @main.command()
-@click.option("--headless/--no-headless", default=False, help="是否无头模式")
-def login_browser(headless: bool):
+def login_browser():
     """通过浏览器扫码登录小红书（会打开浏览器窗口）"""
     from xhs_mcp.client import XhsClient
     
     async def _login():
-        async with XhsClient(headless=headless) as client:
-            if await client.is_logged_in():
-                click.echo("✅ 已经登录")
-                return
-            
-            click.echo("请扫描二维码登录...")
+        # 必须显示浏览器窗口才能扫码，所以 headless=False
+        async with XhsClient(headless=False) as client:
+            click.echo("正在打开浏览器...")
+            # login() 内部会检查是否已登录
             success = await client.login()
             if success:
                 click.echo("✅ 登录成功")

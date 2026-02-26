@@ -3,5 +3,5 @@
 from xhs_mcp.client import XhsClient
 from xhs_mcp.models import PublishImageContent, PublishVideoContent, LoginStatus
 
-__version__ = "0.1.0"
+__version__ = "0.1.3"
 __all__ = ["XhsClient", "PublishImageContent", "PublishVideoContent", "LoginStatus"]
