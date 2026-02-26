@@ -147,8 +147,8 @@ asyncio.run(main())
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourname/xhs-mcp-py.git
-cd xhs-mcp-py
+git clone https://github.com/luweizheng/xhs-mcp.git
+cd xhs-mcp
 
 # 安装开发依赖
 pip install -e ".[dev]"

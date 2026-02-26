@@ -41,8 +41,8 @@ dev = [
 xhs-mcp = "xhs_mcp.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/luweizheng/xhs-mcp-py"
-Repository = "https://github.com/luweizheng/xhs-mcp-py"
+Homepage = "https://github.com/luweizheng/xhs-mcp"
+Repository = "https://github.com/luweizheng/xhs-mcp"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/xhs_mcp"]
