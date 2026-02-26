@@ -33,20 +33,14 @@ def login_browser():
 
 
 @main.command()
-@click.option("--headless/--no-headless", default=True, help="是否无头模式")
-def status(headless: bool):
+def status():
     """检查登录状态"""
-    from xhs_mcp.client import XhsClient
-    
-    async def _status():
-        async with XhsClient(headless=headless) as client:
-            status = await client.check_login_status()
-            if status.is_logged_in:
-                click.echo(f"✅ 已登录")
-            else:
-                click.echo("❌ 未登录")
-    
-    asyncio.run(_status())
+    from xhs_mcp.cookies import get_cookies_file_path
+
+    if get_cookies_file_path().exists():
+        click.echo("✅ 已登录")
+    else:
+        click.echo("❌ 未登录")
 
 
 @main.command()
@@ -334,9 +328,114 @@ def search(keyword: str, headless: bool):
                 click.echo(f"{i}. {feed.display_title}")
                 click.echo(f"   作者: {feed.nickname} | 点赞: {feed.liked_count}")
                 click.echo(f"   ID: {feed.id}")
+                click.echo(f"   xsec_token: {feed.xsec_token}")
                 click.echo()
     
     asyncio.run(_search())
+
+
+@main.command()
+@click.option("--feed-id", required=True, help="笔记 ID")
+@click.option("--xsec-token", required=True, help="访问令牌")
+@click.option("--unlike", is_flag=True, default=False, help="取消点赞")
+@click.option("--headless/--no-headless", default=True, help="是否无头模式")
+def like(feed_id: str, xsec_token: str, unlike: bool, headless: bool):
+    """点赞或取消点赞笔记"""
+    from xhs_mcp.client import XhsClient
+
+    async def _like():
+        async with XhsClient(headless=headless) as client:
+            if not await client.is_logged_in(quick=True):
+                click.echo("❌ 请先登录")
+                return
+
+            if unlike:
+                await client.unlike(feed_id, xsec_token)
+                click.echo("✅ 已取消点赞")
+            else:
+                await client.like(feed_id, xsec_token)
+                click.echo("✅ 已点赞")
+
+    asyncio.run(_like())
+
+
+@main.command()
+@click.option("--feed-id", required=True, help="笔记 ID")
+@click.option("--xsec-token", required=True, help="访问令牌")
+@click.option("--unfavorite", is_flag=True, default=False, help="取消收藏")
+@click.option("--headless/--no-headless", default=True, help="是否无头模式")
+def favorite(feed_id: str, xsec_token: str, unfavorite: bool, headless: bool):
+    """收藏或取消收藏笔记"""
+    from xhs_mcp.client import XhsClient
+
+    async def _favorite():
+        async with XhsClient(headless=headless) as client:
+            if not await client.is_logged_in(quick=True):
+                click.echo("❌ 请先登录")
+                return
+
+            if unfavorite:
+                await client.unfavorite(feed_id, xsec_token)
+                click.echo("✅ 已取消收藏")
+            else:
+                await client.favorite(feed_id, xsec_token)
+                click.echo("✅ 已收藏")
+
+    asyncio.run(_favorite())
+
+
+@main.command(name="comment")
+@click.option("--feed-id", required=True, help="笔记 ID")
+@click.option("--xsec-token", required=True, help="访问令牌")
+@click.option("--content", "-c", required=True, help="评论内容")
+@click.option("--headless/--no-headless", default=True, help="是否无头模式")
+def comment_cmd(feed_id: str, xsec_token: str, content: str, headless: bool):
+    """发表评论"""
+    from xhs_mcp.client import XhsClient
+
+    async def _comment():
+        async with XhsClient(headless=headless) as client:
+            if not await client.is_logged_in(quick=True):
+                click.echo("❌ 请先登录")
+                return
+
+            await client.comment(feed_id, xsec_token, content)
+            click.echo("✅ 评论已发送")
+
+    asyncio.run(_comment())
+
+
+@main.command(name="reply-comment")
+@click.option("--feed-id", required=True, help="笔记 ID")
+@click.option("--xsec-token", required=True, help="访问令牌")
+@click.option("--content", "-c", required=True, help="回复内容")
+@click.option("--comment-id", default=None, help="目标评论 ID")
+@click.option("--user-id", default=None, help="目标用户 ID")
+@click.option("--headless/--no-headless", default=True, help="是否无头模式")
+def reply_comment_cmd(
+    feed_id: str,
+    xsec_token: str,
+    content: str,
+    comment_id: str | None,
+    user_id: str | None,
+    headless: bool,
+):
+    """回复评论"""
+    from xhs_mcp.client import XhsClient
+
+    if not comment_id and not user_id:
+        raise click.UsageError("--comment-id 和 --user-id 至少需要提供一个")
+
+    async def _reply():
+        async with XhsClient(headless=headless) as client:
+            if not await client.is_logged_in(quick=True):
+                click.echo("❌ 请先登录")
+                return
+
+            await client.reply_comment(feed_id, xsec_token, content, comment_id, user_id)
+            click.echo("✅ 回复已发送")
+
+    asyncio.run(_reply())
 
 
 @main.command()

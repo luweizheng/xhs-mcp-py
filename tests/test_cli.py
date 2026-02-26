@@ -69,6 +69,13 @@ class TestCommands:
             'status',
             'logout',
             'publish',
+            'publish-video',
+            'publish-text-card',
+            'search',
+            'like',
+            'favorite',
+            'comment',
+            'reply-comment',
             'serve'
         ]
         for cmd in commands:
