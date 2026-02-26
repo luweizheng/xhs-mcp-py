@@ -17,7 +17,7 @@
 ## 安装
 
 ```bash
-pip install xhs-mcp
+pip install xhs-mcp-py
 
 # 首次运行需安装浏览器
 playwright install chromium
@@ -147,8 +147,8 @@ asyncio.run(main())
 
 ```bash
 # 克隆项目
-git clone https://github.com/luweizheng/xhs-mcp.git
-cd xhs-mcp
+git clone https://github.com/luweizheng/xhs-mcp-py.git
+cd xhs-mcp-py
 
 # 安装开发依赖
 pip install -e ".[dev]"
