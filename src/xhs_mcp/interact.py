@@ -12,8 +12,8 @@ from xhs_mcp.browser import BrowserManager
 
 
 # 选择器常量
-SELECTOR_LIKE_BUTTON = ".interact-container .left .like-lottie"
-SELECTOR_COLLECT_BUTTON = ".interact-container .left .reds-icon.collect-icon"
+SELECTOR_LIKE_BUTTON = ".like-wrapper .like-lottie, .like-wrapper .like-icon"
+SELECTOR_COLLECT_BUTTON = ".collect-wrapper .collect-icon"
 
 
 def make_feed_detail_url(feed_id: str, xsec_token: str) -> str:
@@ -39,7 +39,7 @@ class InteractAction:
 
         # 等待互动容器加载（可选，不阻塞）
         try:
-            await page.wait_for_selector(".interact-container", timeout=5000)
+            await page.wait_for_selector(".like-lottie, .like-icon", timeout=5000)
             logger.debug("互动容器已加载")
         except Exception:
             logger.debug("等待互动容器超时，继续执行")
