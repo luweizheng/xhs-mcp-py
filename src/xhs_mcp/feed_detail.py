@@ -40,6 +40,15 @@ class FeedDetailAction:
             
             # 等待数据加载
             await page.wait_for_function("() => window.__INITIAL_STATE__ !== undefined", timeout=30000)
+            # 等待 noteDetailMap 里出现目标 feed_id（避免只有 undefined 占位数据）
+            try:
+                await page.wait_for_function(
+                    "(fid) => !!(window.__INITIAL_STATE__ && window.__INITIAL_STATE__.note && window.__INITIAL_STATE__.note.noteDetailMap && window.__INITIAL_STATE__.note.noteDetailMap[fid] && window.__INITIAL_STATE__.note.noteDetailMap[fid].note)",
+                    arg=feed_id,
+                    timeout=30000,
+                )
+            except Exception:
+                logger.debug("等待 noteDetailMap[feed_id] 超时，继续尝试解析")
             
             # 提取笔记详情
             detail = await self._extract_detail(page, feed_id)
@@ -55,20 +64,41 @@ class FeedDetailAction:
     
     async def _extract_detail(self, page: Page, feed_id: str) -> dict:
         """提取笔记详情"""
-        result = await page.evaluate("""() => {
-            if (window.__INITIAL_STATE__ &&
-                window.__INITIAL_STATE__.note &&
-                window.__INITIAL_STATE__.note.noteDetailMap) {
-                return JSON.stringify(window.__INITIAL_STATE__.note.noteDetailMap);
-            }
-            return "";
-        }""")
+        # 重试获取 noteDetailMap，直到其包含目标 feed_id 或超时
+        result = ""
+        for _ in range(10):
+            result = await page.evaluate("""(fid) => {
+                if (window.__INITIAL_STATE__ &&
+                    window.__INITIAL_STATE__.note &&
+                    window.__INITIAL_STATE__.note.noteDetailMap) {
+                    const m = window.__INITIAL_STATE__.note.noteDetailMap;
+                    // 有些情况下会先出现 {undefined: {...}} 的占位数据
+                    if (m && m[fid]) {
+                        return JSON.stringify(m);
+                    }
+                    return JSON.stringify(m);
+                }
+                return "";
+            }""", feed_id)
+            if result:
+                try:
+                    note_detail_map = json.loads(result)
+                    if feed_id in note_detail_map and (note_detail_map.get(feed_id) or {}).get("note"):
+                        break
+                except Exception:
+                    pass
+            await asyncio.sleep(0.5)
         
         if not result:
             return {"feed_id": feed_id, "error": "未找到笔记详情"}
         
         try:
             note_detail_map = json.loads(result)
+            if feed_id not in note_detail_map or not (note_detail_map.get(feed_id) or {}).get("note"):
+                return {
+                    "feed_id": feed_id,
+                    "error": "未找到笔记详情（可能 xsec_token 失效、未登录或触发风控）",
+                }
             detail = note_detail_map.get(feed_id, {})
             note = detail.get("note", {})
             

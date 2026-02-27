@@ -17,8 +17,10 @@ def main():
 def login_browser():
     """通过浏览器扫码登录小红书（会打开浏览器窗口）"""
     from xhs_mcp.client import XhsClient
+    import os
     
     async def _login():
+        os.environ.setdefault("XHS_ALLOW_NON_HEADLESS", "1")
         # 必须显示浏览器窗口才能扫码，所以 headless=False
         async with XhsClient(headless=False) as client:
             click.echo("正在打开浏览器...")

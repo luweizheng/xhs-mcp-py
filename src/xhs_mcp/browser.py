@@ -1,6 +1,7 @@
 """浏览器管理模块"""
 
 from typing import Optional
+import os
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 import logging
 
@@ -13,6 +14,10 @@ class BrowserManager:
     """浏览器管理器"""
     
     def __init__(self, headless: bool = True, bin_path: Optional[str] = None):
+        if headless is False:
+            allow = os.getenv("XHS_ALLOW_NON_HEADLESS", "").strip().lower()
+            if allow not in {"1", "true", "yes", "y"}:
+                raise RuntimeError("non-headless 模式已被禁用，请设置环境变量 XHS_ALLOW_NON_HEADLESS=1 后再使用")
         self.headless = headless
         self.bin_path = bin_path
         self._playwright: Optional[Playwright] = None
