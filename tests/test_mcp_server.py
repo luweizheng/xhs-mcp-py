@@ -56,7 +56,7 @@ class TestGetLoginQrcode:
         """测试获取二维码"""
         from xhs_kit.po.mcp_server import get_login_qrcode
         
-        with patch('xhs_mcp.mcp_server.get_client') as mock_get_client:
+        with patch('xhs_kit.po.mcp_server.get_client') as mock_get_client:
             mock_client = AsyncMock()
             mock_result = MagicMock()
             mock_result.timeout = "240s"
@@ -80,7 +80,7 @@ class TestDeleteCookies:
         """测试删除 cookies"""
         from xhs_kit.po.mcp_server import delete_cookies
         
-        with patch('xhs_mcp.mcp_server.get_client') as mock_get_client:
+        with patch('xhs_kit.po.mcp_server.get_client') as mock_get_client:
             mock_client = MagicMock()
             mock_get_client.return_value = mock_client
             
